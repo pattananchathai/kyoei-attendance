@@ -21,11 +21,16 @@ test('บล็อก GPS ไม่แม่นยำ พิกัดปลอ�
   assert.equal(checkGeofence(13, 100, -1, config).allowed, false);
   assert.equal(checkGeofence('13', 100, 10, config).allowed, false);
 });
-test('ใช้พิกัดบริษัทตามข้อกำหนดเป็นค่าเริ่มต้นและตรวจค่าที่กำหนดเอง', () => {
+test('ใช้พิกัดสำนักงานจาก Google Maps เป็นค่าเริ่มต้นและตรวจค่าที่กำหนดเอง', () => {
   assert.deepEqual(geofenceConfig({}), COMPANY_LOCATION);
+  assert.deepEqual(COMPANY_LOCATION, { latitude: 14.0373324, longitude: 100.6088936, radius: 300, maxAccuracy: 100 });
   const env = { COMPANY_LATITUDE: '13', COMPANY_LONGITUDE: '100', COMPANY_RADIUS_METERS: '150', GPS_MAX_ACCURACY_METERS: '100' };
   assert.deepEqual(geofenceConfig(env), config);
   assert.equal(geofenceConfig({ ...env, COMPANY_LATITUDE: '' }).latitude, COMPANY_LOCATION.latitude);
   assert.throws(() => geofenceConfig({ ...env, COMPANY_RADIUS_METERS: '0' }));
   assert.throws(() => geofenceConfig({ ...env, COMPANY_LONGITUDE: 'Infinity' }));
+});
+test('หมุดสำนักงานผ่าน geofence และจุดห่างเกินรัศมีถูกบล็อก', () => {
+  assert.equal(checkGeofence(COMPANY_LOCATION.latitude, COMPANY_LOCATION.longitude, 25, COMPANY_LOCATION).allowed, true);
+  assert.equal(checkGeofence(COMPANY_LOCATION.latitude + 0.003, COMPANY_LOCATION.longitude, 25, COMPANY_LOCATION).allowed, false);
 });

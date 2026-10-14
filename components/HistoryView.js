@@ -39,7 +39,13 @@ export function HistoryView({ admin = false }) {
   }
   const name = (entry) => `${entry.employees?.first_name || ''} ${entry.employees?.last_name || ''}`;
   return <div className="space-y-5">
-    <div className="flex flex-wrap items-end gap-3"><label className="label">เดือนที่ต้องการดู<input aria-label="เดือนที่ต้องการดู" type="month" className="input" value={month} onChange={(e) => { if (e.target.value) { setMonth(e.target.value); setPage(0); } }} /></label><button className="btn-secondary" onClick={refresh}>รีเฟรช</button><span className="pb-2 text-xs text-slate-500">อัปเดตทุก 15 วินาที</span></div>
+    <div className="space-y-2">
+      <div className="flex min-w-0 items-end gap-2">
+        <label className="label min-w-0 flex-1">เดือนที่ต้องการดู<input aria-label="เดือนที่ต้องการดู" type="month" className="input box-border w-full min-w-0 px-3 sm:px-4" value={month} onChange={(e) => { if (e.target.value) { setMonth(e.target.value); setPage(0); } }} /></label>
+        <button className="btn-secondary shrink-0" onClick={refresh}>รีเฟรช</button>
+      </div>
+      <span className="block text-xs text-slate-500">อัปเดตทุก 15 วินาที</span>
+    </div>
     {admin && <form className="flex flex-wrap items-end gap-3" onSubmit={(e) => { e.preventDefault(); setEmployeeId(filter.trim()); setPage(0); }}><label className="label flex-1">กรองด้วยรหัสผู้ใช้ LINE (เว้นว่างเพื่อดูทุกคน)<input className="input" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="U…" maxLength={33} /></label><button className="btn-secondary">ค้นหา</button></form>}
     <Notice message={error} error />
     {!data ? <p role="status">กำลังโหลดประวัติ…</p> : <>
