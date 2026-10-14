@@ -29,6 +29,6 @@ export const POST = endpoint(async (request) => {
   try {
     const job = dbResult(await db().from('line_notifications').select('id').eq('attendance_id', result.data.id).single());
     notificationSent = await deliverNotification(job.id);
-  } catch { console.error('Notification pending recovery'); }
+  } catch { console.error('ข้อความ LINE รอส่งซ้ำ'); }
   return json({ attendance: result.data, notificationSent }, 201);
 });

@@ -30,6 +30,12 @@ export function AppProvider({ children }) {
     if (liff) { if (liff.isLoggedIn()) liff.logout(); liff.login({ redirectUri: window.location.href }); }
     else window.location.reload();
   }
-  return <AppContext.Provider value={{ ...state, api, relogin }}>{children}</AppContext.Provider>;
+  function closeLiff() {
+    const liff = liffRef.current;
+    if (!liff?.isInClient()) return false;
+    liff.closeWindow();
+    return true;
+  }
+  return <AppContext.Provider value={{ ...state, api, relogin, closeLiff }}>{children}</AppContext.Provider>;
 }
 export function useApp() { return useContext(AppContext); }

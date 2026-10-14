@@ -14,6 +14,6 @@ export const POST = endpoint(async (request) => {
   await authorize(request, true);
   const data = await body(request, employeeSchema);
   const result = await db().from('employees').insert(data).select().single();
-  if (result.error?.code === '23505') throw new ApiError(409, 'LINE User ID นี้มีรายชื่อแล้ว');
+  if (result.error?.code === '23505') throw new ApiError(409, 'รหัสผู้ใช้ LINE นี้มีรายชื่อแล้ว');
   return json({ employee: dbResult(result) }, 201);
 });

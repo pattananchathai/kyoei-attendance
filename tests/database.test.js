@@ -8,6 +8,7 @@ test('PostgreSQL migration, constraints, RLS, outbox และ cascade deletion'
     // สร้าง role ชื่อเดียวกับ Supabase แต่ใช้ฐานข้อมูลทดสอบในหน่วยความจำ
     await pg.exec('create role anon; create role authenticated; create role service_role bypassrls;');
     await pg.exec(await readFile(new URL('../supabase/migrations/001_initial.sql', import.meta.url), 'utf8'));
+    await pg.exec(await readFile(new URL('../supabase/migrations/002_update_company_requirements.sql', import.meta.url), 'utf8'));
     const user = 'U11111111111111111111111111111111';
     await pg.query("insert into employees(line_user_id,first_name,last_name) values ($1,'พนักงาน','ทดสอบ')", [user]);
     await t.test('RLS เปิดและ client roles อ่านข้อมูล/เรียก RPC ไม่ได้', async () => {
@@ -22,7 +23,7 @@ test('PostgreSQL migration, constraints, RLS, outbox และ cascade deletion'
     });
     await t.test('คำร้องผิดประเภท/เหตุผลว่าง/ไม่มีเหตุผลถูกบล็อกใน DB', async () => {
       for (const sql of [
-        "insert into leave_requests(line_user_id,request_type,request_date,leave_type) values($1,'ลางงาน','2026-10-13','ลาป่วย')",
+        "insert into leave_requests(line_user_id,request_type,request_date,leave_type) values($1,'ลางาน','2026-10-13','ลาป่วย')",
         "insert into leave_requests(line_user_id,request_type,request_date,ot_reason) values($1,'ขอ OT','2026-10-13','   ')",
         "insert into leave_requests(line_user_id,request_type,request_date,ot_reason,leave_type) values($1,'ขอ OT','2026-10-13','งานผลิต','ลาป่วย')"
       ]) await assert.rejects(pg.query(sql, [user]), (e) => e.code === '23514');
@@ -40,7 +41,7 @@ test('PostgreSQL migration, constraints, RLS, outbox และ cascade deletion'
       } else {
         await assert.rejects(pg.query("select record_attendance($1,'CHECK_IN',13,100,10)", [user]), /TOO_EARLY/);
         // สร้าง fixture สำหรับตรวจ outbox/cascade เมื่อทดสอบก่อนเวลาเปิด
-        await pg.query("insert into attendance_logs(line_user_id,check_type,status_label,location_name,latitude,longitude,gps_accuracy) values($1,'CHECK_IN','เข้างานปกติ','บริษัท เคียวเอิ พรีซิชั่น จำกัด',13,100,10)", [user]);
+        await pg.query("insert into attendance_logs(line_user_id,check_type,status_label,location_name,latitude,longitude,gps_accuracy) values($1,'CHECK_IN','เข้างาน','บริษัท เคียวเออิ พรีซิชั่น จำกัด',13,100,10)", [user]);
         await pg.query("insert into line_notifications(attendance_id,line_user_id,details) select id,line_user_id,'{}'::jsonb from attendance_logs where line_user_id=$1", [user]);
       }
       const jobs = (await pg.query('select * from line_notifications')).rows;

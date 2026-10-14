@@ -13,7 +13,7 @@ for (const path of pages) {
   const response = await fetch(origin + path);
   if (response.status !== 200) throw new Error(`${path}: ${response.status}`);
   const html = await response.text();
-  if (!html.includes('KYOEI PRECISION')) throw new Error(`Missing shell: ${path}`);
+  if (!html.includes('ระบบเช็คชื่อพนักงาน')) throw new Error(`ไม่พบส่วนหัวของหน้า: ${path}`);
   console.log('PASS page', path, response.status);
 }
 for (const [path, method] of guarded) {

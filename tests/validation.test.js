@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { attendanceSchema, employeeSchema, leaveSchema, dateString } from '../lib/validation.js';
 test('คำร้องต้องมีเหตุผลถูกประเภทและไม่ยอมรับการอนุมัติจากผู้ใช้', () => {
-  const leave = { request_type: 'ลางงาน', request_date: '2026-10-13', leave_type: 'ลาป่วย', leave_reason: 'พบแพทย์' };
+  const leave = { request_type: 'ลางาน', request_date: '2026-10-13', leave_type: 'ลาป่วย', leave_reason: 'พบแพทย์' };
   assert.equal(leaveSchema.safeParse(leave).success, true);
   assert.equal(leaveSchema.safeParse({ ...leave, is_approved: true }).success, false);
   assert.equal(leaveSchema.safeParse({ ...leave, leave_reason: '   ' }).success, false);

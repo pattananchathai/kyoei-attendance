@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { distanceMeters, checkGeofence, geofenceConfig, OUTSIDE_MESSAGE } from '../lib/geofence.js';
+import { distanceMeters, checkGeofence, geofenceConfig, OUTSIDE_MESSAGE, COMPANY_LOCATION } from '../lib/geofence.js';
 // พิกัดจำลองสำหรับทดสอบเท่านั้น ไม่ใช่พิกัดของบริษัท
 const config = { latitude: 13, longitude: 100, radius: 150, maxAccuracy: 100 };
 test('ระยะ Haversine และการอยู่ใน/นอกรัศมี', () => {
@@ -21,11 +21,11 @@ test('บล็อก GPS ไม่แม่นยำ พิกัดปลอ�
   assert.equal(checkGeofence(13, 100, -1, config).allowed, false);
   assert.equal(checkGeofence('13', 100, 10, config).allowed, false);
 });
-test('ไม่เดาพิกัดและไม่ใช้ empty string เป็นศูนย์', () => {
-  assert.throws(() => geofenceConfig({}));
+test('ใช้พิกัดบริษัทตามข้อกำหนดเป็นค่าเริ่มต้นและตรวจค่าที่กำหนดเอง', () => {
+  assert.deepEqual(geofenceConfig({}), COMPANY_LOCATION);
   const env = { COMPANY_LATITUDE: '13', COMPANY_LONGITUDE: '100', COMPANY_RADIUS_METERS: '150', GPS_MAX_ACCURACY_METERS: '100' };
   assert.deepEqual(geofenceConfig(env), config);
-  assert.throws(() => geofenceConfig({ ...env, COMPANY_LATITUDE: '' }));
+  assert.equal(geofenceConfig({ ...env, COMPANY_LATITUDE: '' }).latitude, COMPANY_LOCATION.latitude);
   assert.throws(() => geofenceConfig({ ...env, COMPANY_RADIUS_METERS: '0' }));
   assert.throws(() => geofenceConfig({ ...env, COMPANY_LONGITUDE: 'Infinity' }));
 });

@@ -14,10 +14,35 @@ export const GET = endpoint(async (request) => {
   const start = dateString.parse(`${month}-01`);
   const next = new Date(`${start}T00:00:00Z`); next.setUTCMonth(next.getUTCMonth() + 1);
   const end = next.toISOString().slice(0, 10);
-  let logs = db().from('attendance_logs').select('*,employees(first_name,last_name)', { count: 'exact' }).gte('work_date', start).lt('work_date', end).order('timestamp', { ascending: false }).range(page * 50, page * 50 + 49);
-  let leaves = db().from('leave_requests').select('*,employees(first_name,last_name)', { count: 'exact' }).gte('request_date', start).lt('request_date', end).order('request_date', { ascending: false }).order('id').range(page * 50, page * 50 + 49);
+  // ตารางจริงยังไม่มี FK ที่ PostgREST รู้จักจาก attendance_logs ไปยัง employees
+  // จึงดึงประวัติและชื่อพนักงานแยกกัน แทนการ join employees(...) ที่ทำให้เกิด PGRST200
+  let logs = db()
+    .from('attendance_logs')
+    .select('*', { count: 'exact' })
+    .gte('work_date', start)
+    .lt('work_date', end)
+    .order('timestamp', { ascending: false })
+    .range(page * 50, page * 50 + 49);
+  let leaves = db()
+    .from('leave_requests')
+    .select('*,employees(first_name,last_name)', { count: 'exact' })
+    .gte('request_date', start)
+    .lt('request_date', end)
+    .order('request_date', { ascending: false })
+    .order('id')
+    .range(page * 50, page * 50 + 49);
   const user = admin ? (params.get('employee') ? lineId.parse(params.get('employee')) : null) : employee.line_user_id;
   if (user) { logs = logs.eq('line_user_id', user); leaves = leaves.eq('line_user_id', user); }
   const [a, b] = await Promise.all([logs, leaves]);
-  return json({ logs: dbResult(a), requests: dbResult(b), logCount: a.count, requestCount: b.count, page });
+  const attendance = dbResult(a);
+  const lineUserIds = [...new Set(attendance.map((entry) => entry.line_user_id))];
+  const employees = lineUserIds.length
+    ? dbResult(await db().from('employees').select('line_user_id,first_name,last_name').in('line_user_id', lineUserIds))
+    : [];
+  const employeesByLineId = new Map(employees.map((entry) => [entry.line_user_id, entry]));
+  const logsWithNames = attendance.map((entry) => ({
+    ...entry,
+    employees: employeesByLineId.get(entry.line_user_id) || null
+  }));
+  return json({ logs: logsWithNames, requests: dbResult(b), logCount: a.count, requestCount: b.count, page });
 });
