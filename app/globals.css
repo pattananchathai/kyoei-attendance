@@ -16,3 +16,13 @@
   .btn-secondary { @apply inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm transition hover:bg-slate-50; }
   .label { @apply block text-sm font-medium; }
 }
+
+/* ซ่อนเมนูแอปและจัดหน้าเอกสารให้พิมพ์หรือบันทึกเป็น PDF ได้สะดวก */
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { background: #fff !important; color: #0f172a !important; }
+  .app-header, .app-footer, .print-hidden { display: none !important; }
+  main { max-width: none !important; padding: 0 !important; overflow: visible !important; }
+  .guide-card { break-inside: avoid; box-shadow: none !important; }
+  * { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}
